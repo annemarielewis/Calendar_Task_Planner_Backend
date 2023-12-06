@@ -50,5 +50,23 @@ app.get("/tasks", async function (req, res) {
     res.status(500).json({ error: error.message });
   }
 });
+// Route for deleting a task by ID
+app.delete("/deletetask/:id", async (req, res) => {
+  const taskId = req.params.id;
+  try {
+    // Use Mongoose to find and delete the task by ID
+    const deletedTask = await Task.findByIdAndDelete(taskId);
+
+    if (!deletedTask) {
+      return res.status(404).json({ message: "Task not found" });
+    }
+
+    // If the task is successfully deleted, fetch and send the updated list of tasks
+    const tasks = await Task.find();
+    res.json(tasks);
+  } catch (error) {
+    res.status(500).json({ error: error.message });
+  }
+});
 
 app.listen(PORT, () => console.log(`Listening on port: ${PORT}`));
