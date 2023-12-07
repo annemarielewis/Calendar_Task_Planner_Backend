@@ -24,6 +24,28 @@ app.use(cors());
 app.use(express.urlencoded({ extended: true }));
 //middleware here ^//
 
+//An index route (shows all tasks) for the user
+//CRUD: READ
+app.get("/tasks", async function (req, res) {
+  try {
+    const tasks = await Task.find();
+    res.json(tasks);
+  } catch (error) {
+    res.status(500).json({ error: error.message });
+  }
+});
+
+// find task by id:
+app.get("/tasks/:id", async function (req, res) {
+    const taskId = req.params.id;
+    try {
+      const task = await Task.findById(taskId);
+      res.json(task);
+    } catch (error) {
+      res.status(500).json({ error: error.message });
+    }
+  });
+
 //We will want to update our database to include a new task every time a task is added on the front end
 //CRUD: CREATE
 app.post("/newtask", async function createTask(req, res) {
@@ -40,16 +62,28 @@ app.post("/newtask", async function createTask(req, res) {
   }
 });
 
-//An index route (shows all tasks) for the user
-//CRUD: READ
-app.get("/tasks", async function (req, res) {
+//CRUD: update
+app.put("/updatetask/:id", async function updateTask(req, res) {
+  const taskId = req.params.id;
+  console.log(req.body);
   try {
-    const tasks = await Task.find();
-    res.json(tasks);
+    const existingTask = await Task.findById(taskId);
+    if (!existingTask) {
+      return res.status(404).json({ message: "Task not found" });
+    }
+    // Update the task with the new data
+    existingTask.set(req.body);
+    await existingTask.save();
+    console.log(existingTask);
+
+    return res.status(200).json({ taskData: existingTask });
   } catch (error) {
-    res.status(500).json({ error: error.message });
+    console.error(error);
+    return res.status(500).json({ error: error.message });
   }
 });
+
+// CRUD: DELETE
 // Route for deleting a task by ID
 app.delete("/deletetask/:id", async (req, res) => {
   const taskId = req.params.id;
@@ -60,7 +94,6 @@ app.delete("/deletetask/:id", async (req, res) => {
     if (!deletedTask) {
       return res.status(404).json({ message: "Task not found" });
     }
-
     // If the task is successfully deleted, fetch and send the updated list of tasks
     const tasks = await Task.find();
     res.json(tasks);
