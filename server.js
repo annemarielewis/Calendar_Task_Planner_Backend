@@ -37,14 +37,14 @@ app.get("/tasks", async function (req, res) {
 
 // find task by id:
 app.get("/tasks/:id", async function (req, res) {
-    const taskId = req.params.id;
-    try {
-      const task = await Task.findById(taskId);
-      res.json(task);
-    } catch (error) {
-      res.status(500).json({ error: error.message });
-    }
-  });
+  const taskId = req.params.id;
+  try {
+    const task = await Task.findById(taskId);
+    res.json(task);
+  } catch (error) {
+    res.status(500).json({ error: error.message });
+  }
+});
 
 //We will want to update our database to include a new task every time a task is added on the front end
 //CRUD: CREATE
